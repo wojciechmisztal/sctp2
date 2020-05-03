@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
     }
     sctp2_connect(sfd, (struct sockaddr**) saddrs);
     while(1) {
-        sctp2_send(sfd, "abcdefghi", 10);
+        sctp2_send(sfd, "abcdefghijk", 12);
         //int result = sctp2_recv(sfd, &buf, 10);
         //printf("Received result: ");
         //printf("%s", buf + 20);

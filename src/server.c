@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
 
     while(1) {
         printf("Server loop\n");
-        int result = sctp2_recv(rfd, buf, 10);
+        int result = sctp2_recv(rfd, buf, 5);
         printf("Received result: ");
         printf("%s", buf);
         printf(", size: %d\n", result);

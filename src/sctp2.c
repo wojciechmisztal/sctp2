@@ -47,9 +47,10 @@ int sctp2_accept(int sfd) {
         printf("Accept: SYN\n");
          rfd = __sctp2_create_and_add_socket();
         __sctp2_add_sockaddrs(rfd, saddrs);
-        __sctp2_send(rfd, SCTP2_TYPE_SYN_ACK, 0, 0);
+        __sctp2_send_other(rfd, SCTP2_TYPE_SYN_ACK);
         __sctp2_connect_socket(rfd, saddrs);
-        result = __sctp2_recv(rfd, buf, BUF_LEN);
+        result = __sctp2_recv_other(rfd, buf, BUF_LEN);
+        hdr = (struct sctp2hdr*) (buf + IPHDR_LEN);
         if(hdr->type == SCTP2_TYPE_ACK) {
             printf("Accept: ACK\n");
         }
@@ -60,8 +61,8 @@ int sctp2_accept(int sfd) {
     return rfd;
 }
 
-void sctp2_send(int sfd, char* msg, size_t msg_len) {
-    __sctp2_send(sfd, SCTP2_TYPE_DATA, msg, msg_len);
+void sctp2_send(int sfd, char* msg, size_t buf_len) {
+    __sctp2_send_data(sfd, msg, buf_len);
 }
 
 int sctp2_connect(int sfd, struct sockaddr** saddrs) {
@@ -70,27 +71,31 @@ int sctp2_connect(int sfd, struct sockaddr** saddrs) {
     __sctp2_connect_socket(sfd, saddrs);
 
     // 3 way handshake
-    __sctp2_send(sfd, SCTP2_TYPE_SYN, 0, 0);
-    int result = __sctp2_recv(sfd, buf, BUF_LEN);
+    __sctp2_send_other(sfd, SCTP2_TYPE_SYN);
+    int result = __sctp2_recv_other(sfd, buf, BUF_LEN);
     struct sctp2hdr* hdr = (struct sctp2hdr*) (buf + IPHDR_LEN);
     if(hdr->type == SCTP2_TYPE_SYN_ACK) {
         printf("Accept: SYNACK\n");
-        __sctp2_send(sfd, SCTP2_TYPE_ACK, 0, 0);
+        __sctp2_send_other(sfd, SCTP2_TYPE_ACK);
     }
     return 0;
 }
 
 int sctp2_recv(int sfd, char* buf, size_t buf_len) {
-    char* buf_recv = malloc((buf_len + IPHDR_LEN + SCTP2HDR_LEN) * sizeof(char));
-    int result = __sctp2_recv(sfd, buf_recv, buf_len + IPHDR_LEN + SCTP2HDR_LEN);
-    memcpy(buf, buf_recv + IPHDR_LEN + SCTP2HDR_LEN, buf_len * sizeof(char));
-
-    free(buf_recv);
+    int result = __sctp2_recv_data(sfd, buf, buf_len);
     /*printf("Received result: ");
     for(int j = 0; j < result; ++j) //20 == length of an ip header
         printf("%c", ((uint8_t*) buf)[j]);
     printf(", size: %d\n", result);*/
-    return result - IPHDR_LEN - SCTP2HDR_LEN;
+    return result;
+}
+
+int sctp2_close(int sfd) {
+    char buf[BUF_LEN];
+    __sctp2_send_other(sfd, SCTP2_TYPE_FIN);
+    int result = __sctp2_recv_other(sfd, buf, BUF_LEN);
+    
+
 }
 
 
@@ -134,23 +139,39 @@ void __sctp2_add_sockaddrs(int sfd, struct sockaddr** saddrs) {
     }
 }
 
-void __sctp2_send(int sfd, short type, char* msg, size_t msg_len) {
+void __sctp2_send_data(int sfd, char* buf, size_t buf_len) {
+    char buf_other[BUF_LEN];
+    int msg_send_len = buf_len > DATA_MSG_LEN ? buf_len : DATA_MSG_LEN;
     int result;
     struct sctp2hdr* shdr;
-    if(type == SCTP2_TYPE_DATA){
-        shdr = malloc(sizeof(struct sctp2hdr) + msg_len * sizeof(char));
-        memset(shdr, 0, sizeof(struct sctp2hdr) + msg_len * sizeof(char));
-        shdr->type = type;
-        strncpy(&shdr->msg, msg, msg_len); 
+    shdr = malloc(sizeof(struct sctp2hdr) + msg_send_len * sizeof(char));
+    memset(shdr, 0, sizeof(struct sctp2hdr) + msg_send_len * sizeof(char));
+    shdr->type = SCTP2_TYPE_DATA;
+    for(int i = 0; i * DATA_MSG_LEN < buf_len; i++) {
+        int cur_chan = i % sctp2_saddrs_len;
+        strncpy(&shdr->msg, buf + i * DATA_MSG_LEN, DATA_MSG_LEN); 
+        shdr->number = i;
+
+        __sctp2_print("Send to", sctp2_sockets[sfd][cur_chan], sctp2_addr[sfd][cur_chan]);
+        result = sendto(sctp2_sockets[sfd][cur_chan], shdr, sizeof(struct sctp2hdr) + DATA_MSG_LEN * sizeof(char), 0, sctp2_addr[sfd][cur_chan], sizeof(struct sockaddr));
+        if(result < 0) {
+            perror("Send error");
+        }
     }
-    else {
-        shdr = malloc(sizeof(struct sctp2hdr));
-        memset(shdr, 0, sizeof(struct sctp2hdr));
-        shdr->type = type;
-    }
+    free(shdr);
+}
+
+void __sctp2_send_other(int sfd, short type) {
+    char buf[BUF_LEN];
+    int result;
+    struct sctp2hdr* shdr;
+
+    shdr = malloc(sizeof(struct sctp2hdr));
+    memset(shdr, 0, sizeof(struct sctp2hdr));
+    shdr->type = type;
     for(int i = 0; i < sctp2_saddrs_len; i++) {
         __sctp2_print("Send to", sctp2_sockets[sfd][i], sctp2_addr[sfd][i]);
-        result = sendto(sctp2_sockets[sfd][i], shdr, sizeof(struct sctp2hdr) + msg_len * sizeof(char), 0, sctp2_addr[sfd][i], sizeof(struct sockaddr));
+        result = sendto(sctp2_sockets[sfd][i], shdr, sizeof(struct sctp2hdr) + buf_len * sizeof(char), 0, sctp2_addr[sfd][i], sizeof(struct sockaddr));
         if(result < 0) {
             perror("Send error");
         }
@@ -172,7 +193,29 @@ int __sctp2_recv_new_connection(int sfd, char* buf, size_t buf_len, struct socka
     return result;
 }
 
-int __sctp2_recv(int sfd, char* buf, size_t buf_len) {
+int __sctp2_recv_data(int sfd, char* buf, size_t buf_len) {
+    int msg_recv_len = DATA_MSG_LEN;
+    int result;
+    char* buf_recv = malloc((IPHDR_LEN + SCTP2HDR_LEN + msg_recv_len) * sizeof(char));
+
+    for(int i = 0; i * DATA_MSG_LEN < buf_len; i++) {
+        int cur_chan = i % sctp2_saddrs_len;
+
+        __sctp2_print("Recv from", sctp2_sockets[sfd][cur_chan], sctp2_addr[sfd][cur_chan]);
+        result = recv(sctp2_sockets[sfd][cur_chan], buf_recv, IPHDR_LEN + SCTP2HDR_LEN + msg_recv_len, 0);
+        if(result < 0) {
+            perror("Recv error");
+        }
+
+        struct sctp2hdr* shdr  = buf_recv + IPHDR_LEN;
+
+        memcpy(buf + i * DATA_MSG_LEN, buf_recv + IPHDR_LEN + SCTP2HDR_LEN, msg_recv_len);
+    }
+    free(buf_recv);
+    return result - IPHDR_LEN - SCTP2HDR_LEN;
+}
+
+int __sctp2_recv_other(int sfd, char* buf, size_t buf_len) {
     int result = -1;
     for(int i = 0; i < sctp2_saddrs_len; i++) {
         socklen_t saddr_len = sizeof(struct sockaddr);
@@ -181,7 +224,7 @@ int __sctp2_recv(int sfd, char* buf, size_t buf_len) {
             perror("Recv error");
         }
         __sctp2_print("Recv from", sctp2_sockets[sfd][i], sctp2_addr[sfd][i]);
-        printf("Result: %s\n", buf + IPHDR_LEN + SCTP2HDR_LEN);
+        printf("Result: %s, number: %d\n", buf + IPHDR_LEN + SCTP2HDR_LEN, ((struct sctp2hdr*)(buf + IPHDR_LEN))->number);
 
     }
     return result;
