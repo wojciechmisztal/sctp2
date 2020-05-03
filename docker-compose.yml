@@ -1,0 +1,41 @@
+version: "3.8"
+services:
+    server:
+        build: .
+        tty: true
+        networks:
+            channel1:
+                ipv4_address: 172.19.0.2
+            channel2:
+                ipv4_address: 172.20.0.2
+        command: /bin/sh -c "gcc src/server.c src/sctp2.c src/sctp2.h -o target/server.out -Wall && ./target/server.out 172.19.0.2 172.20.0.2"
+        working_dir: /app
+        volumes: 
+            - ./src:/app/src
+            - ./target:/app/target
+    client:
+        build: .
+        tty: true
+        depends_on:
+            - server
+        networks:
+            channel1:
+                ipv4_address: 172.19.0.3
+            channel2:
+                ipv4_address: 172.20.0.3
+        command: /bin/sh -c "gcc src/client.c src/sctp2.c src/sctp2.h -o target/client.out -Wall && ./target/client.out 172.19.0.2 172.20.0.2"
+        working_dir: /app
+        volumes: 
+            - ./src:/app/src
+            - ./target:/app/target
+networks:
+    channel1:
+        driver: bridge
+        ipam:
+            config:
+                - subnet: 172.19.0.0/24
+    channel2:
+        driver: bridge
+        ipam:
+            config:
+                - subnet: 172.20.0.0/24
