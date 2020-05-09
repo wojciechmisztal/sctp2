@@ -15,6 +15,7 @@
 #define DATA_MSG_LEN 2 
 #define IPHDR_LEN 20
 #define SCTP2HDR_LEN 8
+#define MSG_WINDOW 3
 
 struct sctp2hdr {
     short source;
@@ -22,6 +23,13 @@ struct sctp2hdr {
     short type; 
     short number; // used to be u_int8_t
     char msg[];
+};
+
+struct sctp2_msg_data{
+    short number;
+    short channel;
+    size_t buf_len;
+    char* msg;
 };
 
 int sctp2_socket_id;
@@ -55,16 +63,18 @@ void __sctp2_connect_socket(int sfd, struct sockaddr** saddrs);
 
 void __sctp2_add_sockaddrs(int sfd, struct sockaddr** saddrs);
 
-void __sctp2_send_data(int sfd, char* buf, size_t buf_len);
+void __sctp2_send_data(int sfd, struct sctp2_msg_data* buf_data);
 
 void __sctp2_send_other(int sfd, short type);
 
 int __sctp2_recv_new_connection(int sfd, char* buf, size_t buf_len, struct sockaddr** saddrs);
 
-int __sctp2_recv_data(int sfd, char* buf, size_t buf_len);
+int __sctp2_recv_data(int sfd, struct sctp2_msg_data* buf_data);
 
 int __sctp2_recv_other(int sfd, char* buf, size_t buf_len);
 
-void __sctp2_print(char* msg, int sfd, struct sockaddr* saddr);
+void __sctp2_print(char* msg, int type, int sfd, struct sockaddr* saddr);
+
+char* __sctp2_type_to_str(int type);
 
 #endif
