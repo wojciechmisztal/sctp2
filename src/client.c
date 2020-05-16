@@ -31,9 +31,12 @@ int main(int argc, char **argv) {
         saddrs[i] = malloc(sizeof(struct sockaddr_in));
         memset(saddrs[i], 0, sizeof(struct sockaddr_in));
         struct sockaddr_in* saddr_in = (struct sockaddr_in*)saddrs[i];
+
+        char* ip_addr = strtok(argv[i + 1], ":");
+        char* port = strtok(NULL, ":");
         saddr_in->sin_family = AF_INET;
-        saddr_in->sin_port = 0;
-        saddr_in->sin_addr.s_addr = inet_addr(argv[i + 1]);
+        saddr_in->sin_port = htons(atoi(port));
+        saddr_in->sin_addr.s_addr = inet_addr(ip_addr);
     }
     sctp2_connect(sfd, (struct sockaddr**) saddrs);
     while(1) {

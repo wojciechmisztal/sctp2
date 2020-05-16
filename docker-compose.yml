@@ -8,7 +8,7 @@ services:
                 ipv4_address: 172.19.0.2
             channel2:
                 ipv4_address: 172.20.0.2
-        command: /bin/sh -c "gcc src/server.c src/sctp2.c src/sctp2.h -o target/server.out -Wall && ./target/server.out 172.19.0.2 172.20.0.2"
+        command: /bin/sh -c "gcc src/server.c src/sctp2.c src/sctp2.h -o target/server.out -Wall && ./target/server.out 172.19.0.2:1234 172.20.0.2:1234"
         working_dir: /app
         volumes: 
             - ./src:/app/src
@@ -23,7 +23,7 @@ services:
                 ipv4_address: 172.19.0.3
             channel2:
                 ipv4_address: 172.20.0.3
-        command: /bin/sh -c "gcc src/client.c src/sctp2.c src/sctp2.h -o target/client.out -Wall && ./target/client.out 172.19.0.2 172.20.0.2"
+        command: /bin/sh -c "gcc src/client.c src/sctp2.c src/sctp2.h -o target/client.out -Wall && ./target/client.out 172.19.0.2:1234 172.20.0.2:1234"
         working_dir: /app
         volumes: 
             - ./src:/app/src
