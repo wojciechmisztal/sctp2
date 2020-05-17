@@ -39,17 +39,14 @@ struct __sctp2_msg_data{
 
 struct __sctp2_sock {
     short cur_chan;
+    short cur_number;
     short* sockets;
     struct sockaddr** saddrs;
 };
 
-struct sock_fprog bpf;
-
-int sctp2_socket_id;
-
 struct __sctp2_sock** sctp2_sockets;
-size_t sctp2_sockets_count;
-size_t sctp2_saddrs_len;
+size_t __sctp2_sockets_count;
+size_t __sctp2_saddrs_len;
 
 
 int sctp2_socket(size_t saddrs_len);
