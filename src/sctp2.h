@@ -11,6 +11,10 @@
 #define SCTP2_TYPE_FIN 5
 #define SCTP2_TYPE_RST 6
 
+#define SCTP2_SOCKET_SERVER_DATA 0
+#define SCTP2_SOCKET_SERVER_OTHER 1
+#define SCTP2_SOCKET_CLIENT 2
+
 #define IPPROTO_SCTP2 222
 #define BUF_LEN 28
 #define DATA_MSG_LEN 2 
@@ -33,6 +37,11 @@ struct __sctp2_msg_data{
     char* msg;
 };
 
+struct __sctp2_sock {
+    short cur_chan;
+    struct sockaddr** saddrs;
+};
+
 struct sock_fprog bpf;
 
 int sctp2_socket_id;
@@ -40,7 +49,7 @@ int** sctp2_sockets;
 size_t sctp2_sockets_count;
 size_t sctp2_saddrs_len;
 
-struct sockaddr*** sctp2_addr;
+struct __sctp2_sock** sctp2_addrs;
 
 
 int sctp2_socket(size_t saddrs_len);
