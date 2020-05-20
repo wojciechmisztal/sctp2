@@ -11,16 +11,18 @@
 #define SCTP2_TYPE_FIN 5
 #define SCTP2_TYPE_RST 6
 
-#define SCTP2_SOCKET_SERVER_DATA 0
-#define SCTP2_SOCKET_SERVER_OTHER 1
-#define SCTP2_SOCKET_CLIENT 2
-
 #define IPPROTO_SCTP2 222
 #define BUF_LEN 28
 #define DATA_MSG_LEN 2 
 #define IPHDR_LEN 20
 #define SCTP2HDR_LEN 8
 #define MSG_WINDOW 3
+
+#define MSG_NOT_SENT 0
+#define MSG_NOT_REPLIED 1
+#define MSG_REPLIED 2
+
+#define SCTP2_TIMEOUT_USEC 500000
 
 struct sctp2hdr {
     short source;
@@ -33,6 +35,7 @@ struct sctp2hdr {
 struct __sctp2_msg_data{
     short number;
     short channel;
+    short replied;
     size_t buf_len;
     char* msg;
 };

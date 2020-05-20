@@ -39,14 +39,12 @@ int main(int argc, char **argv) {
         saddr_in->sin_addr.s_addr = inet_addr(ip_addr);
     }
     sctp2_connect(sfd, (struct sockaddr**) saddrs);
-    while(1) {
-        sctp2_send(sfd, "abcdefghijklmnopqrstuvwxyz", 26);
-        //int result = sctp2_recv(sfd, &buf, 10);
-        //printf("Received result: ");
-        //printf("%s", buf + 20);
-        //printf(", size: %d\n", result);
-        sleep(100);
-    }
-    close(sfd);
+    sctp2_send(sfd, "abcdefghijklmnopqrstuvwxyz", 26);
+    //int result = sctp2_recv(sfd, &buf, 10);
+    //printf("Received result: ");
+    //printf("%s", buf + 20);
+    //printf(", size: %d\n", result);
+    sleep(100);
+    sctp2_close(sfd);
     return EXIT_SUCCESS;
 }
