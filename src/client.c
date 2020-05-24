@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
     //printf("Received result: ");
     //printf("%s", buf + 20);
     //printf(", size: %d\n", result);
-    sleep(100);
+    sleep(10);
     sctp2_close(sfd);
     return EXIT_SUCCESS;
 }
