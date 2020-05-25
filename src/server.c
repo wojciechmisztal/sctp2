@@ -41,16 +41,16 @@ int main(int argc, char **argv) {
         saddr_in->sin_addr.s_addr = inet_addr(ip_addr);
     }
     sctp2_bind(sfd, saddrs);
-    int rfd = sctp2_accept(sfd);
 
     while(1) {
-        printf("Server loop\n");
-        int result = sctp2_recv(rfd, buf, 6);
-        printf("Received result: ");
-        printf("%s", buf);
-        printf(", size: %d\n", result);
-        sleep(1);
+        int rfd = sctp2_accept(sfd);
+        int result = 0;
+        do {
+            result = sctp2_recv(rfd, buf, 6);
+            printf("%.*s", result, buf);
+        } while(result != 0);
+        printf("\n");
+        close(sfd);
     }
-    close(sfd);
     return EXIT_SUCCESS;
 }
