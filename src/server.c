@@ -20,7 +20,9 @@ int main(int argc, char **argv) {
     setbuf(stdout, NULL);
 
     int sfd;
-    char* buf;
+    void* buf;
+    FILE *fp;
+    fp = fopen("./output/result","wb");
     buf = malloc(1024 * sizeof(char));
     struct sockaddr** saddrs;
     int saddrs_len = argc - 1;
@@ -42,15 +44,15 @@ int main(int argc, char **argv) {
     }
     sctp2_bind(sfd, saddrs);
 
-    while(1) {
         int rfd = sctp2_accept(sfd);
         int result = 0;
         do {
-            result = sctp2_recv(rfd, buf, 6);
-            printf("%.*s", result, buf);
+            result = sctp2_recv(rfd, buf);
+            printf("%.*s\n", 5, buf);
+            fwrite(buf, sizeof(void), result, fp);
         } while(result != 0);
         printf("\n");
         close(sfd);
-    }
+    fclose(fp);
     return EXIT_SUCCESS;
 }
