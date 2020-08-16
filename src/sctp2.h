@@ -13,7 +13,7 @@
 
 #define IPPROTO_SCTP2 222
 #define BUF_LEN 28 // == IPHDR_LEN + SCTP2HDR_LEN
-#define DATA_MSG_LEN 256
+#define DATA_MSG_LEN 60000
 #define IPHDR_LEN 20
 #define SCTP2HDR_LEN 8
 #define MSG_WINDOW 10
@@ -22,9 +22,9 @@
 #define MSG_NOT_REPLIED 1
 #define MSG_REPLIED 2
 
-#define SCTP2_TIMEOUT_USEC 100000
+#define SCTP2_TIMEOUT_USEC 1
 
-#define DEBUG 1
+#define DEBUG 0
 
 struct sctp2hdr {
     short source;

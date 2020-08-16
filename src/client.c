@@ -9,8 +9,6 @@
 #include <errno.h>
 #include "sctp2.h"
 
-#define CLIENT_BUF 256
-
 void cleanup() {
     printf("\n--- cleanup ---\n");
 }
@@ -25,7 +23,7 @@ int main(int argc, char **argv) {
     struct sockaddr** saddrs;
     FILE *fp;
     void* buf;
-    buf = malloc(CLIENT_BUF * sizeof(void));
+    buf = malloc(DATA_MSG_LEN * sizeof(void));
     int saddrs_len = argc - 2;
     saddrs = malloc((argc - 2) * sizeof(struct sockaddr*));
     char* filename = argv[argc - 1];
@@ -53,9 +51,10 @@ int main(int argc, char **argv) {
     sctp2_connect(sfd, (struct sockaddr**) saddrs);
     int fread_result = 0;
     do {
-        fread_result = fread(buf, sizeof(void), CLIENT_BUF, fp);
+        fread_result = fread(buf, sizeof(void), DATA_MSG_LEN, fp);
         sctp2_send(sfd, buf, fread_result);
     } while(fread_result != 0);
+    sleep(20);
     //int result = sctp2_recv(sfd, &buf, 10);
     //printf("Received result: ");
     //printf("%s", buf + 20);

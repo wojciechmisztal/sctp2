@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
     void* buf;
     FILE *fp;
     fp = fopen("./output/result","wb");
-    buf = malloc(1024 * sizeof(char));
+    buf = malloc(DATA_MSG_LEN * sizeof(char));
     struct sockaddr** saddrs;
     int saddrs_len = argc - 1;
     saddrs = malloc(saddrs_len * sizeof(struct sockaddr*));
@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
         int result = 0;
         do {
             result = sctp2_recv(rfd, buf);
-            printf("%.*s\n", 5, buf);
+            //printf("%.*s\n", result, buf);
             fwrite(buf, sizeof(void), result, fp);
         } while(result != 0);
         printf("\n");
