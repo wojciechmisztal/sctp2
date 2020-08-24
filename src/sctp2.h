@@ -22,7 +22,7 @@
 #define MSG_NOT_REPLIED 1
 #define MSG_REPLIED 2
 
-#define SCTP2_TIMEOUT_USEC 1
+#define SCTP2_TIMEOUT_USEC 10
 
 #define DEBUG 0
 

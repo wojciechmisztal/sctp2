@@ -54,7 +54,6 @@ int main(int argc, char **argv) {
         fread_result = fread(buf, sizeof(void), DATA_MSG_LEN, fp);
         sctp2_send(sfd, buf, fread_result);
     } while(fread_result != 0);
-    sleep(20);
     //int result = sctp2_recv(sfd, &buf, 10);
     //printf("Received result: ");
     //printf("%s", buf + 20);
